@@ -9,10 +9,14 @@
 import AVFoundation
 
 open class VersaPlayerItem: AVPlayerItem {
-    
+
+  // MARK: - Properties
+
     /// whether content passed through the asset is encrypted and should be decrypted
     public var isEncrypted: Bool = false
-    
+
+  // MARK: - Computed Properties -
+
     public var audioTracks: [VersaPlayerMediaTrack] {
         return tracks(for: .audible)
     }
@@ -25,34 +29,38 @@ open class VersaPlayerItem: AVPlayerItem {
         return tracks(for: .legible)
     }
 
-    deinit {
-     
-    }
+  // MARK: - Private Computations
     
-    private func convert(with mediaSelectionOption: AVMediaSelectionOption, group: AVMediaSelectionGroup) -> VersaPlayerMediaTrack {
-        let title = mediaSelectionOption.displayName
-        let language = mediaSelectionOption.extendedLanguageTag ?? "none"
-        return VersaPlayerMediaTrack(option: mediaSelectionOption, group: group, name: title, language: language)
+  private func convert(with mediaSelectionOption: AVMediaSelectionOption,
+                       group: AVMediaSelectionGroup) -> VersaPlayerMediaTrack {
+    let title = mediaSelectionOption.displayName
+    let language = mediaSelectionOption.extendedLanguageTag ?? "none"
+    return VersaPlayerMediaTrack(name: title, language: language, option: mediaSelectionOption, group: group)
+  }
+
+  private func tracks(for characteristic: AVMediaCharacteristic) -> [VersaPlayerMediaTrack] {
+    guard let group = asset.mediaSelectionGroup(forMediaCharacteristic: characteristic) else {
+      return []
     }
 
-    private func tracks(for characteristic: AVMediaCharacteristic) -> [VersaPlayerMediaTrack] {
-        guard let group = asset.mediaSelectionGroup(forMediaCharacteristic: characteristic) else {
-            return []
-        }
-        let options = group.options
-        let tracks = options.map { (option) -> VersaPlayerMediaTrack in
-            return convert(with: option, group: group)
-        }
-        return tracks
+    let options = group.options
+    let tracks = options.map { (option) -> VersaPlayerMediaTrack in
+      return convert(with: option, group: group)
     }
+
+    return tracks
+  }
     
-    public func currentMediaTrack(for characteristic: AVMediaCharacteristic) -> VersaPlayerMediaTrack? {
-        
-        if let tracks = asset.mediaSelectionGroup(forMediaCharacteristic: characteristic), let currentTrack = currentMediaSelection.selectedMediaOption(in: tracks) {
-            return convert(with: currentTrack, group: tracks)
-        }
-        
-        return nil
-    }
+  public func currentMediaTrack(for characteristic: AVMediaCharacteristic) -> VersaPlayerMediaTrack? {
+    guard let tracks = asset.mediaSelectionGroup(forMediaCharacteristic: characteristic),
+          let currentTrack = currentMediaSelection.selectedMediaOption(in: tracks) else { return nil }
+
+    return convert(with: currentTrack, group: tracks)
+  }
+
+  // MARK: - Memory Management & Deconstructions -
+
+  deinit {
+  }
     
 }

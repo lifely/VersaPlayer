@@ -22,6 +22,6 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = '9.0'
     s.tvos.deployment_target = '9.0'
     s.macos.deployment_target = '10.12'
-    s.swift_version = '4.2'
+    s.swift_version = ['4.2', '5.4']
     s.source_files = 'VersaPlayer/Classes/**/*'
 end

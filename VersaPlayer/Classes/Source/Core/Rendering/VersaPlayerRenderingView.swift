@@ -13,13 +13,23 @@ import UIKit
 #endif
 import AVKit
 
+
 open class VersaPlayerRenderingView: View {
+
+  // MARK: - Properties
+
+  /// VersaPlayer instance being rendered by renderingLayer
+  public weak var handler: VersaPlayerView!
+
+  // MARK: - Properties Overrides
 
   #if os(iOS)
   override open class var layerClass: AnyClass {
       return AVPlayerLayer.self
   }
   #endif
+
+  // MARK: - Computed Properties -
 
   lazy public var playerLayer: AVPlayerLayer = {
      #if os(iOS)
@@ -29,25 +39,35 @@ open class VersaPlayerRenderingView: View {
     #endif
   }()
 
-  /// VersaPlayer instance being rendered by renderingLayer
-  public weak var player: VersaPlayerView!
+  var layerObserver: NSKeyValueObservation?
 
-  deinit {
-    
+  // MARK: - Initializers -
+
+  required public init?(coder aDecoder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
   }
 
   /// Constructor
   ///
   /// - Parameters:
   ///     - player: VersaPlayer instance to render.
-  public init(with player: VersaPlayerView) {
+  public init(with handler: VersaPlayerView) {
     super.init(frame: CGRect.zero)
-    playerLayer.player = player.player
+
+    self.handler = handler
+    playerLayer.player = handler.player
+
+//    layerObserver = playerLayer.observe(\.isReadyForDisplay, options: [.initial, .new], changeHandler: { [weak self] layer, value in
+//      print("TestING RenderingView ReadyForDisplay; layer = \(layer); isReadyForDisplay = \(value.newValue ?? false)")
+//      guard value.newValue == true else { return }
+////      let start = CMTime(value: 001, timescale: 1)
+////      self?.playerLayer.player?.seek(to: start, toleranceBefore: .zero, toleranceAfter: .zero) { success in
+////           print("seek finished success = ", success)
+////       }
+//    })
   }
 
-  required public init?(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
+  // MARK: - CALayer (life-cycle) -
 
   #if os(macOS)
 
@@ -56,5 +76,10 @@ open class VersaPlayerRenderingView: View {
   }
 
   #endif
+
+  // MARK: - Memory Management && Deconstructions -
+
+  deinit {
+  }
 
 }
